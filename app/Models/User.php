@@ -23,6 +23,31 @@ class User extends Authenticatable
         'password',
     ];
 
+    public function likesSent()
+    {
+        return $this->hasMany(Like::class, 'sender_id');
+    }
+
+    public function likesReceived()
+    {
+        return $this->hasMany(Like::class, 'receiver_id');
+    }
+
+    public function chatRooms()
+    {
+        return $this->belongsToMany(ChatRoom::class, 'chat_room_users');
+    }
+
+    public function messages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
