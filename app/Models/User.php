@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Redis; // オンライン状態の管理に用いる
 
 class User extends Authenticatable
 {
@@ -49,6 +50,29 @@ class User extends Authenticatable
     public function notifications()
     {
         return $this->hasMany(Notification::class);
+    }
+
+    // ユーザーのオンライン状態を更新（各種アクションの際に呼び出す）
+    public function updateOnlineStatus()
+    {
+        $timestamp = now()->timestamp;
+        Redis::hset('online_users', $this->id, $timestamp);
+    }
+
+    // ユーザーがオンラインかどうかを判定
+    public function isOnline()
+    {
+        $lastActive = Redis::hget('online_users', $this->id);
+
+        if ($lastActive) {
+            $lastActive = (int) $lastActive;
+            $inactiveTime = now()->timestamp - $lastActive;
+
+            // 10分以内であればオンラインと判定
+            // 下記の判定時間はサービスに定義する事も検討
+            return $inactiveTime < 600;
+        }
+        return false;
     }
 
     /**
