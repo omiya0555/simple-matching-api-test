@@ -23,6 +23,8 @@ services:
             - sail
         depends_on:
             - mysql
+            - redis  # Redisを依存関係に追加
+
     mysql:
         image: 'mysql/mysql-server:8.0'
         ports:
@@ -47,9 +49,18 @@ services:
                 - '-p${DB_PASSWORD}'
             retries: 3
             timeout: 5s
+
+    redis:
+        image: 'redis:alpine'
+        ports:
+            - '6379:6379'  # Redisのデフォルトポート
+        networks:
+            - sail
+
 networks:
     sail:
         driver: bridge
+
 volumes:
     sail-mysql:
         driver: local

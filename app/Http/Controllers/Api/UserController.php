@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
-use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\User;
 
 class UserController extends Controller
 {
@@ -60,5 +61,41 @@ class UserController extends Controller
             DB::rollBack();
             return response()->json(['message' => 'ユーザー更新失敗', 'error' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * オンラインユーザーのランダムリスト取得
+     */
+    public function getRandomOnlineUsers()
+    {
+        $onlineUsers = Redis::hkeys('online_users');
+
+        if (empty($onlineUsers)) {
+            return response()->json(['message' => 'オンラインのユーザーはいません'], 200);
+        }
+    
+        // オンラインユーザーのIDリストから10人をランダムに取得
+        $users = User::whereIn('id', $onlineUsers)
+                     ->inRandomOrder()  // ランダム並び替え
+                     ->take(10)         // 10人まで取得
+                     ->get(['id', 'name', 'profile_image']); 
+    
+        return response()->json($users);
+    }
+
+    /**
+     * online user check :test
+     */
+    public function setOnlineUsers()
+    {
+        // IDが1から15のユーザーを取得
+        $users = User::whereBetween('id', [1, 15])->get();
+
+        // 各ユーザーのIDをRedisにオンラインユーザーとしてセット
+        foreach ($users as $user) {
+            Redis::hset('online_users', $user->id, now()->timestamp);
+        }
+
+        return response()->json(['message' => 'オンラインユーザーを設定しました'], 200);
     }
 }

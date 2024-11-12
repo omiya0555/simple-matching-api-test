@@ -13,7 +13,7 @@ use App\Http\Controllers\Api\NotificationController;
 Route::post('/login', [AuthController::class, 'login']); // ログイン
 
 Route::middleware('auth:sanctum')->group(function () {
-    
+
     // AuthController: 認証関連のルート
     Route::post('/logout',      [AuthController::class, 'logout']);         // ログアウト処理
     Route::get( '/user',        [AuthController::class, 'user']);           // ログインユーザー情報取得
@@ -22,6 +22,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [UserController::class, 'index']);                 // ユーザー一覧
     Route::get('/users/{id}', [UserController::class, 'show']);             // ユーザー詳細
     Route::put('/users/{id}', [UserController::class, 'update']);           // ユーザー更新
+
+    Route::post('/users/set-online', [UserController::class, 'setOnlineUsers']); // テスト用のオンラインユーザー設定エンドポイント
+    Route::get('/online-users/random', [UserController::class, 'getRandomOnlineUsers']); // ランダムリスト取得
 
     // LikeController: いいね関連のルート
     Route::post('/likes', [LikeController::class, 'store']);                // いいね送信
