@@ -14,7 +14,7 @@ class UserFactory extends Factory
     public function definition()
     {
         // 日本人男性の名前リスト
-        $maleNames = ['Yuta', 'Satoshi', 'Tanaka', 'Kenji', 'Taro', 'Hiroshi', 'Takashi', 'Kenta', 'Shota', 'Ryota'];
+        $maleNames   = ['Yuta', 'Satoshi', 'Tanaka', 'Kenji', 'Taro', 'Hiroshi', 'Takashi', 'Kenta', 'Shota', 'Ryota'];
         
         // 日本人女性の名前リスト
         $femaleNames = ['Sana', 'Yui', 'Hana', 'Miki', 'Rina', 'Haruka', 'Ayumi', 'Naoko', 'Yoko', 'Eriko'];
@@ -31,12 +31,12 @@ class UserFactory extends Factory
 
         // 性別をランダムに選択し、対応する名前リストから名前をランダムに選択
         $gender = $this->faker->randomElement(['male', 'female']);
-        $name = $gender === 'male'
+        $name   = $gender === 'male'
             ? $this->faker->randomElement($maleNames)
             : $this->faker->randomElement($femaleNames);
 
         return [
-            'name'          => $name,
+            'name'              => $name,
             'email'             => $this->faker->unique()->safeEmail,
             'email_verified_at' => now(),
             'password'          => Hash::make('password'), 
