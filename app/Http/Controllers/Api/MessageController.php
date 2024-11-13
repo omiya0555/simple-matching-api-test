@@ -4,46 +4,42 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Message;
 
 class MessageController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * チャットルームのメッセージ一覧を取得
      */
-    public function index()
+    public function index($chatRoomId)
     {
-        //
+        // 指定されたチャットルーム内のメッセージを取得
+        $messages = Message::where('chat_room_id', $chatRoomId)
+            ->with('user:id,name,profile_image') // 送信者の情報を取得
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return response()->json($messages);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * 新しいメッセージを送信
      */
-    public function store(Request $request)
+    public function store(Request $request, $chatRoomId)
     {
-        //
-    }
+        $userId  = $request->user()->id;
+        $content = $request->input('content');
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        // メッセージを作成
+        $message = Message::create([
+            'chat_room_id'  => $chatRoomId,
+            'user_id'       => $userId,
+            'content'       => $content,
+        ]);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return response()->json([
+            'message' => 'メッセージが送信されました',
+            'data' => $message
+        ], 201);
     }
 }
