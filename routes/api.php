@@ -27,8 +27,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/online-users/random', [UserController::class, 'getRandomOnlineUsers']); // ランダムリスト取得
 
     // LikeController: いいね関連のルート
-    Route::post('/likes', [LikeController::class, 'store']);                // いいね送信
-    Route::get('/likes/matches', [LikeController::class, 'getMatches']);    // マッチングの確認
+    Route::get('/likes', [LikeController::class, 'index']);                 // いいねしたユーザーの取得
+    Route::post('/likes', [LikeController::class, 'sendLike']);             // いいね送信
 
     // ChatRoomController: チャットルーム関連のルート
     Route::get('/chat-rooms', [ChatRoomController::class, 'index']);        // チャットルーム一覧

@@ -4,46 +4,65 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\ChatRoom;
+use App\Models\Like;
+use App\Models\User;
 
 class LikeController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * いいねしたユーザーの取得
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $userId = $request->user()->id;
+
+        // いいねしたユーザーのIDリストを取得
+        $likedUserIds = Like::where('sender_id', $userId)->pluck('receiver_id');
+
+        // いいねしたユーザーの詳細情報を Users テーブルから取得
+        $likedUsers = User::whereIn('id', $likedUserIds)->get(['id', 'name', 'profile_image']); 
+        
+        return response()->json($likedUsers, 200);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * いいねを送信するメソッド
      */
-    public function store(Request $request)
+    public function sendLike(Request $request)
     {
-        //
+        $senderId   = $request->user()->id;
+        $receiverId = $request->input('receiver_id');
+
+        // すでにいいねがあるかを確認
+        $existingLike = Like::where('sender_id', $senderId)
+                        ->where('receiver_id', $receiverId)
+                        ->first();
+
+        if ($existingLike) {
+            return response()->json(['message' => '既にいいね済みです'], 200);
+        }
+
+        // いいねを保存
+        Like::create([
+            'sender_id'     => $senderId,
+            'receiver_id'   => $receiverId,
+        ]);
+
+        // 相互のいいねがあるか確認してマッチングを判定
+        // 送信者が相手で、受信者が自分のLIKEがテーブルにあるか
+        if (Like::where('sender_id', $receiverId)->where('receiver_id', $senderId)->exists()) {
+            // マッチング成立、チャットルームを作成  !!!It's match!!!
+            $chatRoom = ChatRoom::create([]);
+            $chatRoom->users()->attach([$senderId, $receiverId]);
+
+            return response()->json([
+                'message'       => 'マッチング成立',
+                'chat_room_id'  => $chatRoom->id
+            ], 201);
+        }
+
+        return response()->json(['message' => 'いいねを送りました'], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }
