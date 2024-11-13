@@ -32,8 +32,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ChatRoomController: チャットルーム関連のルート
     Route::get('/chat-rooms', [ChatRoomController::class, 'index']);        // チャットルーム一覧
-    Route::post('/chat-rooms', [ChatRoomController::class, 'store']);       // チャットルーム作成
-    Route::get('/chat-rooms/{id}', [ChatRoomController::class, 'show']);    // 特定チャットルーム取得
 
     // MessageController: メッセージ関連のルート
     Route::get('/chat-rooms/{chatRoom}/messages', [MessageController::class, 'index']);     // メッセージ取得

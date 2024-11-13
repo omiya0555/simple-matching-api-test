@@ -4,15 +4,25 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\ChatRoom;
 
 class ChatRoomController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * ユーザーが属するチャットルームの一覧を取得
+     * マッチした人とのチャットルーム一覧
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $userId = $request->user()->id;
+
+        // ユーザーが参加しているチャットルームを取得
+        // usersとのリレーションでユーザー情報も取得
+        $chatRooms = ChatRoom::whereHas('users', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })->with('users:id,name,profile_image')->get();
+
+        return response()->json($chatRooms);
     }
 
     /**
