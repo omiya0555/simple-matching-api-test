@@ -18,9 +18,16 @@ class ChatRoomController extends Controller
 
         // ユーザーが参加しているチャットルームを取得
         // usersとのリレーションでユーザー情報も取得
+        // messageとのリレーションで最新のメッセージも取得
         $chatRooms = ChatRoom::whereHas('users', function ($query) use ($userId) {
             $query->where('user_id', $userId);
-        })->with('users:id,name,profile_image')->get();
+        })->with([
+            'users:id,name,profile_image',
+            // messages.を付けることでchatroomid が messagesのものと明確になる。
+            'latestMessage' => function ($query) {
+                $query->select('messages.id', 'messages.chat_room_id', 'content', 'created_at');
+            }
+        ])->get();
 
         return response()->json($chatRooms);
     }

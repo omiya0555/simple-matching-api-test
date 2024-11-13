@@ -17,4 +17,11 @@ class ChatRoom extends Model
     {
         return $this->hasMany(Message::class);
     }
+
+    // チャットルームの最後のメッセージ
+    // 一覧に表示するために専用で定義
+    public function latestMessage()
+    {
+        return $this->hasOne(Message::class)->latestOfMany();
+    }
 }
