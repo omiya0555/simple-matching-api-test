@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('chat_rooms', function (Blueprint $table) {
             $table->id();
+            $table->string('chat_name')->nullable(); 
+            $table->boolean('is_group')->default(false); 
             $table->timestamps();
         });
     }
