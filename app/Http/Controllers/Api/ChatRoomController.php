@@ -25,7 +25,7 @@ class ChatRoomController extends Controller
             'users:id,name,profile_image',
             // messages.を付けることでchatroomid が messagesのものと明確になる。
             'latestMessage' => function ($query) {
-                $query->select('messages.id', 'messages.chat_room_id', 'content', 'created_at');
+                $query->select('messages.user_id', 'messages.chat_room_id', 'content', 'created_at');
             }
         ])->get();
 
