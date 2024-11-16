@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Broadcast;
 
-Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
+// 認可ロジック
+Broadcast::channel('chat-room.{chatRoomId}', function ($user, $chatRoomId) {
+    return $user->chatRooms()->where('chat_room_id', $chatRoomId)->exists();
 });

@@ -10,7 +10,9 @@ use App\Http\Controllers\Api\ChatRoomController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\NotificationController;
 
-Route::post('/login', [AuthController::class, 'login']); // ログイン
+Route::post('/login', [AuthController::class, 'login']);    // ログイン
+
+Broadcast::routes(['middleware' => ['auth:sanctum']]);      // 認証ルート
 
 Route::middleware('auth:sanctum')->group(function () {
 

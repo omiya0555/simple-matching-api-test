@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Events\MessageSent;
 use Illuminate\Http\Request;
 use App\Models\Message;
 
@@ -37,6 +38,9 @@ class MessageController extends Controller
             'content'       => $content,
         ]);
 
+        // イベントを発火
+        broadcast(new MessageSent($message))->toOthers();
+        
         return response()->json([
             'message' => 'メッセージが送信されました',
             'data' => $message
