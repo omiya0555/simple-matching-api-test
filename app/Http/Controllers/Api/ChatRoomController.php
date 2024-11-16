@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Http\Request;
 use App\Models\ChatRoom;
 
@@ -15,52 +16,37 @@ class ChatRoomController extends Controller
     public function index(Request $request)
     {
         $userId = $request->user()->id;
+        $onlineUsers = Redis::hkeys('online_users'); // オンラインユーザー情報を取得
 
         // ユーザーが参加しているチャットルームを取得
-        // usersとのリレーションでユーザー情報も取得
-        // messageとのリレーションで最新のメッセージも取得
+        // 併せてユーザー情報、最新のメッセージも取得
         $chatRooms = ChatRoom::whereHas('users', function ($query) use ($userId) {
             $query->where('user_id', $userId);
         })->with([
             'users:id,name,profile_image',
-            // messages.を付けることでchatroomid が messagesのものと明確になる。
             'latestMessage' => function ($query) {
-                $query->select('messages.user_id', 'messages.chat_room_id', 'content', 'created_at');
+                $query->select(
+                    'messages.user_id', 
+                    'messages.chat_room_id', 
+                    'content', 
+                    'created_at'
+                );
             }
         ])->get();
 
+        // 各チャットルームのユーザー情報を加工
+        $chatRooms->each(function ($chatRoom) use ($onlineUsers, $userId) {
+            // 本人を除外し、オンラインフラグを追加
+            $chatRoom->users = $chatRoom->users->filter(function ($user) use ($userId, $onlineUsers) {
+                if ($user->id !== $userId) {
+                    $user->is_online = in_array($user->id, $onlineUsers);
+                    return true;
+                }
+                return false;
+            });
+        });
+
+        // pivotによる冗長な情報 や 自身の情報等 を フィルターする必要がある。
         return response()->json($chatRooms);
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }
