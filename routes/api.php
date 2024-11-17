@@ -14,7 +14,7 @@ Route::post('/login', [AuthController::class, 'login']);    // ログイン
 
 Broadcast::routes(['middleware' => ['auth:sanctum']]);      // 認証ルート
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum','update.online'])->group(function () {
 
     // AuthController: 認証関連のルート
     Route::post('/logout',      [AuthController::class, 'logout']);         // ログアウト処理
