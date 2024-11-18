@@ -23,12 +23,15 @@ class ChatRoomController extends Controller
         $chatRooms = ChatRoom::whereHas('users', function ($query) use ($userId) {
             $query->where('user_id', $userId);
         })->with([
-            'users:id,name,profile_image',
+            'users' => function ($query) {
+                $query->select('users.id', 'users.name', 'user_icons.icon_path as profile_image')
+                    ->leftJoin('user_icons', 'users.icon_id', '=', 'user_icons.id');
+            },
             'latestMessage' => function ($query) {
                 $query->select(
-                    'messages.user_id', 
-                    'messages.chat_room_id', 
-                    'content', 
+                    'messages.user_id',
+                    'messages.chat_room_id',
+                    'content',
                     'created_at'
                 );
             }
@@ -46,7 +49,7 @@ class ChatRoomController extends Controller
             });
         });
 
-        // pivotによる冗長な情報 や 自身の情報等 を フィルターする必要がある。
+        // pivotによる冗長な情報や自身の情報等をフィルターする必要がある
         return response()->json($chatRooms);
     }
 }
