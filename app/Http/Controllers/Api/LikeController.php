@@ -20,9 +20,12 @@ class LikeController extends Controller
         // いいねしたユーザーのIDリストを取得
         $likedUserIds = Like::where('sender_id', $userId)->pluck('receiver_id');
 
-        // いいねしたユーザーの詳細情報を Users テーブルから取得
-        $likedUsers = User::whereIn('id', $likedUserIds)->get(['id', 'name', 'profile_image']); 
-        
+        // いいねしたユーザーの詳細情報を Users テーブルから取得し、アイコンパスを結合
+        $likedUsers = User::select('users.id', 'users.name', 'user_icons.icon_path as profile_image')
+            ->leftJoin('user_icons', 'users.icon_id', '=', 'user_icons.id')
+            ->whereIn('users.id', $likedUserIds)
+            ->get();
+
         return response()->json($likedUsers, 200);
     }
 

@@ -16,7 +16,10 @@ class MessageController extends Controller
     {
         // 指定されたチャットルーム内のメッセージを取得
         $messages = Message::where('chat_room_id', $chatRoomId)
-            ->with('user:id,name,profile_image') // 送信者の情報を取得
+            ->with(['user' => function ($query) {
+                $query->select('users.id', 'users.name', 'user_icons.icon_path as profile_image')
+                      ->leftJoin('user_icons', 'users.icon_id', '=', 'user_icons.id');
+            }])
             ->orderBy('created_at', 'asc')
             ->get();
 
