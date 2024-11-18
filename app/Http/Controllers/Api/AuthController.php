@@ -50,6 +50,18 @@ class AuthController extends Controller
     // ログイン情報の取得
     public function user(Request $request)
     {
-        return response()->json($request->user());
+        $user = $request->user()
+            ->load('icon:id,icon_path'); // 関連するアイコンの情報をロード
+
+        return response()->json([
+            'id'           => $user->id,
+            'name'         => $user->name,
+            'email'        => $user->email,
+            'location'     => $user->location,
+            'gender'       => $user->gender,
+            'birth_date'   => $user->birth_date,
+            'is_verified'  => $user->is_verified,
+            'profile_image'=> $user->icon->icon_path ?? null, 
+        ]);
     }
 }
