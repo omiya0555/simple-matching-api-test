@@ -72,7 +72,7 @@ class UserController extends Controller
             return response()->json(['message' => 'オンラインのユーザーはいません'], 200);
         }
     
-        $users = User::select('users.id', 'users.name', 'user_icons.icon_path as profile_image')
+        $users = User::select('users.id', 'users.name','location', 'user_icons.icon_path as profile_image')
             ->leftJoin('user_icons', 'users.icon_id', '=', 'user_icons.id')
             ->whereIn('users.id', $onlineUsers)
             ->inRandomOrder()
