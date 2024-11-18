@@ -52,6 +52,11 @@ class User extends Authenticatable
         return $this->hasMany(Notification::class);
     }
 
+    public function icon()
+    {
+        return $this->belongsTo(UserIcon::class, 'icon_id');
+    }
+
     // ユーザーのオンライン状態を更新（各種アクションの際に呼び出す）
     public function updateOnlineStatus()
     {

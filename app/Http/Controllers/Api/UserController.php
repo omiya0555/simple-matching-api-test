@@ -15,7 +15,10 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::select('id', 'name', 'profile_image', 'location', 'gender')->get();
+        $users = User::select('users.id', 'users.name', 'user_icons.icon_path as profile_image', 'users.location', 'users.gender')
+            ->leftJoin('user_icons', 'users.icon_id', '=', 'user_icons.id')
+            ->get();
+    
         return response()->json($users);
     }
 
@@ -24,17 +27,12 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        $user = User::findOrFail($id);
-        return response()->json([
-            'id'            => $user->id,
-            'name'          => $user->name,
-            'profile_image' => $user->profile_image,
-            'location'      => $user->location,
-            'gender'        => $user->gender,
-            'birth_date'    => $user->birth_date,
-            'bio'           => $user->bio,
-            'is_verified'   => $user->is_verified,
-        ]);
+        $user = User::leftJoin('user_icons', 'users.icon_id', '=', 'user_icons.id')
+            ->where('users.id', $id)
+            ->select('users.id', 'users.name', 'user_icons.icon_path as profile_image', 'users.location', 'users.gender', 'users.birth_date', 'users.bio', 'users.is_verified')
+            ->firstOrFail();
+    
+        return response()->json($user);
     }
 
     /**
@@ -43,18 +41,18 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
-
+    
         $validatedData = $request->validate([
-            'name'          => 'string|max:255',
-            'profile_image' => 'string|max:255',
-            'location'      => 'string|max:255',
+            'name'     => 'string|max:255',
+            'icon_id'  => 'integer|exists:user_icons,id', // アイコンIDのバリデーションを追加
+            'location' => 'string|max:255',
         ]);
-        
+    
         DB::beginTransaction();
-
+    
         try {
             $user->update($validatedData);
-            
+    
             DB::commit();
             return response()->json(['message' => 'ユーザー更新成功', 'user' => $user], 200);
         } catch (\Exception $e) {
@@ -69,16 +67,17 @@ class UserController extends Controller
     public function getRandomOnlineUsers()
     {
         $onlineUsers = Redis::hkeys('online_users');
-
+    
         if (empty($onlineUsers)) {
             return response()->json(['message' => 'オンラインのユーザーはいません'], 200);
         }
     
-        // オンラインユーザーのIDリストから10人をランダムに取得
-        $users = User::whereIn('id', $onlineUsers)
-                     ->inRandomOrder()  // ランダム並び替え
-                     ->take(10)         // 10人まで取得
-                     ->get(['id', 'name', 'profile_image']); 
+        $users = User::select('users.id', 'users.name', 'user_icons.icon_path as profile_image')
+            ->leftJoin('user_icons', 'users.icon_id', '=', 'user_icons.id')
+            ->whereIn('users.id', $onlineUsers)
+            ->inRandomOrder()
+            ->take(10)
+            ->get();
     
         return response()->json($users);
     }
@@ -89,7 +88,7 @@ class UserController extends Controller
     public function setOnlineUsers()
     {
         // IDが1から15のユーザーを取得
-        $users = User::whereBetween('id', [1, 15])->get();
+        $users = User::whereBetween('id', [25, 45])->get();
 
         // 各ユーザーのIDをRedisにオンラインユーザーとしてセット
         foreach ($users as $user) {
